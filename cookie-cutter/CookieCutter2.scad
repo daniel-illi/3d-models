@@ -5,7 +5,7 @@ height = 12;
 flangeWidth = 6;
 stampDepth = 1;
 lineDepth = 2;
-fileName = "smily.dxf";
+dxfFile = "smily.dxf";
 model = "stamp";
 
 if(model == "stamp") {
@@ -14,12 +14,11 @@ if(model == "stamp") {
 	cookiecutter();
 } else if(model == "handle") {
 	handle();
+} else if(model == "stampInverted") {
+	stampInverted();
 } else {
 	echo("model has to be one of stamp, cutter, handle");
 }
-
-//cookiecutter();
-//stamp();
 
 
 module handle() {
@@ -43,17 +42,32 @@ module handle() {
 }
 
 module stamp() {
-union(){
 	difference() {
 		difference(){
 			baseShape(stampDepth + baseHeight);
-			translate([0,0,baseHeight])linear_extrude(file = fileName, height=stampDepth*1.1, layer = "Stamp");
+			translate([0,0,baseHeight])linear_extrude(file = dxfFile, height=stampDepth*1.1, layer = "Stamp");
 		}
 		translate([0,0,-1]) {
 			minkowski() { outline(); cylinder(r = 0.8, h = (stampDepth + baseHeight)*2);}
 		}
 	}
 }
+
+module stampInverted() {
+	difference() {
+		union(){
+			baseShape(baseHeight);
+			intersection(){
+				baseShape(stampDepth + baseHeight);
+				translate([0,0,baseHeight]){
+					linear_extrude(file = dxfFile, height=stampDepth*1.1, layer = "Stamp");
+				}
+			}
+		}
+		translate([0,0,-1]) {
+			minkowski() { outline(); cylinder(r = 0.8, h = (stampDepth + baseHeight)*2);}
+		}
+	}
 }
 
 module cookiecutter() {
@@ -85,19 +99,19 @@ module flange(){
 }
 
 module supports(H){
-	linear_extrude(file = fileName, height=H, layer = "Supports");
+	linear_extrude(file = dxfFile, height=H, layer = "Supports");
 }
 
 module holes(H){
-	translate([0,0,-H]) linear_extrude(file = fileName, height=H*3, layer = "Holes");
+	translate([0,0,-H]) linear_extrude(file = dxfFile, height=H*3, layer = "Holes");
 }
 
 module baseShape(H){
-	linear_extrude(file = fileName, height=H, layer = "CC");
+	linear_extrude(file = dxfFile, height=H, layer = "CC");
 }
 
 module lines(H){
-	linear_extrude(file = fileName, height=H, layer = "Lines");
+	linear_extrude(file = dxfFile, height=H, layer = "Lines");
 }
 
 module outline(thickness){
